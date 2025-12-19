@@ -89,27 +89,21 @@ void Game::process_user_move(std::string &move) {
 		return;
 	}
 
-	PieceMovement piece_movement(board, first_square_index);
-	if (!piece_movement.is_move_possible(second_square_index)) {
-		std::cout << "PieceMovement::is_move_possible FAILED!" << std::endl;
-	} else {
-		MoveResult result = board.make_move(first_square_index, second_square_index);
-		if (result == MoveResult::Incorrect) {
-			std::cout << "Incorrect move! Follow the rules!" << std::endl;
-			return;
-		}		
+	bool is_white_turn = board.state.is_white_turn();
+	if (Piece::is_white(board.get_square(first_square_index)) != is_white_turn) {
+		std::cout << (is_white_turn ? "White" : "Black") << " to move" << std::endl;
+		return;
 	}
 
-	// if (!PieceMovement::is_move_possible(board, first_square_index, second_square_index)) {
-	// 	std::cout << "PieceMovement::is_move_possible FAILED!" << std::endl;
-	// }
+	PieceMovement piece_movement(board, first_square_index);
+	if (!piece_movement.is_move_possible(second_square_index)) {
+		std::cout << "Impossible move" << std::endl;
+	}
 
-
-	// std::cout << "VALID MOVE, SQUARE: "
-	// 	<< std::to_string(first_square_index) << ", "
-	// 	<< std::to_string(second_square_index) << std::endl;
-
+	board.make_move(first_square_index, second_square_index);
 	print_board();
+
+
 };
 
 void Game::print_board() {

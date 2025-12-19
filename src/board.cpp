@@ -78,35 +78,11 @@ void Board::setup_default_board() {
 	}
 }
 
-MoveResult Board::make_move(uint32_t target_square_index, uint32_t destination_square_index) {
-	if (target_square_index >= square_count ||
-		destination_square_index >= square_count ||
-		target_square_index == destination_square_index
-	) {
-		return MoveResult::Incorrect;
-	}
-
-	uint32_t target_row = get_row_by_square_index(target_square_index);
-	uint32_t target_column = get_column_by_square_index(target_square_index);
-	uint32_t destination_row = get_row_by_square_index(destination_square_index);
-	uint32_t destination_column = get_column_by_square_index(destination_square_index);
-
+void Board::make_move(uint32_t target_square_index, uint32_t destination_square_index) {
 	Piece::Type piece = board[target_square_index];
-
-	if (Piece::is_pawn(piece)) {
-		Piece::Type destination_piece = board[destination_square_index];
-		if (Piece::is_white(piece)) {
-			if (target_column != destination_column) {
-
-			}
-		} else {
-
-		}
-	}
 
 	board[destination_square_index] = piece;
 	board[target_square_index] = Piece::Type::None;
 	internal_state.change_turn();
-	return MoveResult::Success;
 }
 

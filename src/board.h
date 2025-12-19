@@ -6,13 +6,6 @@
 #include "piece.h"
 #include "board_state.h"
 
-enum class MoveResult {
-	Incorrect = 1,
-	Success,
-	Checkmate,
-	Draw,
-};
-
 class Board {
 private:
 	BoardState internal_state;
@@ -29,7 +22,7 @@ public:
 	uint32_t get_square_count() const { return square_count; };
 	uint32_t get_row_by_square_index(uint32_t index) const { return index / width; };
 	uint32_t get_column_by_square_index(uint32_t index) const { return index % width; };
-	MoveResult make_move(uint32_t target_square_index, uint32_t destination_square_index);
+	void make_move(uint32_t target_square_index, uint32_t destination_square_index);
 	bool is_in_bounds(uint32_t row, uint32_t column) const;
 	bool is_square_equals(uint32_t row, uint32_t column, Piece::Type piece) const;
 	bool is_square_not_equals(uint32_t row, uint32_t column, Piece::Type piece) const;

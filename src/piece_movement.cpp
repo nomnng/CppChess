@@ -1,11 +1,9 @@
 #include "piece_movement.h"
 
 PieceMovement::PieceMovement(const Board& board, uint32_t target_square)
-	: width(board.get_width()), height(board.get_height()),
+	: possible_moves(board.get_width(), board.get_height()),
 	target_piece(board.get_square(target_square)), is_target_piece_white(Piece::is_white(target_piece))
 {
-	possible_moves = std::make_unique<bool[]>(board.get_square_count());
-
 	calculate_possible_moves(board, target_square);
 }
 
@@ -28,45 +26,15 @@ void PieceMovement::calculate_possible_moves(const Board& board, uint32_t target
 	}
 }
 
-bool PieceMovement::set_possible_if(const Board& board, uint32_t row, uint32_t column, Piece::Type piece) {
-	if (board.is_square_equals(row, column, piece)) {
-		possible_moves[row * width + column] = true;
-		return true;
-	}
-	return false;
-}
-
-bool PieceMovement::set_possible_if_not(const Board& board, uint32_t row, uint32_t column, Piece::Type piece) {
-	if (board.is_square_not_equals(row, column, piece)) {
-		possible_moves[row * width + column] = true;
-		return true;
-	}
-	return false;
-}
-
-bool PieceMovement::set_possible_if_enemy(const Board& board, uint32_t row, uint32_t column) {
-	Piece::Type piece = board.get_square(row, column);
-
-	if (Piece::is_white(piece) != is_target_piece_white) {
-		possible_moves[row * width + column] = true;
-		return true;
-	}
-	return false;	
-}
-
-void PieceMovement::set_possible(uint32_t row, uint32_t column) {
-	possible_moves[row * width + column] = true;
-}
-
 void PieceMovement::set_pawn_possible_moves(const Board &board, uint32_t row, uint32_t column) {
 	int direction = is_target_piece_white ? -1 : 1;
 
-	if (set_possible_if(board, row + direction, column, Piece::Type::None)) {
+	if (possible_moves.set_possible_if(board, row + direction, column, Piece::Type::None)) {
 		// two square move
 		if (is_target_piece_white && row == (board.get_height() - 2)) {
-			set_possible_if(board, row + direction * 2, column, Piece::Type::None);
+			possible_moves.set_possible_if(board, row + direction * 2, column, Piece::Type::None);
 		} else if (!is_target_piece_white && row == 1) {
-			set_possible_if(board, row + direction * 2, column, Piece::Type::None);
+			possible_moves.set_possible_if(board, row + direction * 2, column, Piece::Type::None);
 		}
 	}
 
@@ -75,7 +43,7 @@ void PieceMovement::set_pawn_possible_moves(const Board &board, uint32_t row, ui
 	for (int offset : offsets) {
 		uint32_t capture_column = column + offset;
 		if (board.is_square_not_equals(capture_row, capture_column, Piece::Type::None)) {
-			set_possible_if_enemy(board, capture_row, capture_column);
+			possible_moves.set_possible_if_enemy(board, capture_row, capture_column, is_target_piece_white);
 		}
 	}
 }
@@ -90,9 +58,9 @@ void PieceMovement::set_knight_possible_moves(const Board &board, uint32_t row, 
 		uint32_t c = column + offset_c;
 
 		if (board.is_in_bounds(r, c)) {
-			bool is_empty = set_possible_if(board, r, c, Piece::Type::None);
+			bool is_empty = possible_moves.set_possible_if(board, r, c, Piece::Type::None);
 			if (!is_empty) {
-				set_possible_if_enemy(board, r, c);
+				possible_moves.set_possible_if_enemy(board, r, c, is_target_piece_white);
 			}
 		}
 	}
@@ -107,8 +75,8 @@ void PieceMovement::set_rook_possible_moves(const Board &board, uint32_t row, ui
 		uint32_t r = row + direction_r;
 		uint32_t c = column + direction_c;
 		while (board.is_in_bounds(r, c)) {
-			if (!set_possible_if(board, r, c, Piece::Type::None)) {
-				set_possible_if_enemy(board, r, c);
+			if (!possible_moves.set_possible_if(board, r, c, Piece::Type::None)) {
+				possible_moves.set_possible_if_enemy(board, r, c, is_target_piece_white);
 				break;				
 			}
 
@@ -127,8 +95,8 @@ void PieceMovement::set_bishop_possible_moves(const Board &board, uint32_t row, 
 		uint32_t r = row + direction_r;
 		uint32_t c = column + direction_c;
 		while (board.is_in_bounds(r, c)) {
-			if (!set_possible_if(board, r, c, Piece::Type::None)) {
-				set_possible_if_enemy(board, r, c);
+			if (!possible_moves.set_possible_if(board, r, c, Piece::Type::None)) {
+				possible_moves.set_possible_if_enemy(board, r, c, is_target_piece_white);
 				break;				
 			}
 
@@ -152,14 +120,13 @@ void PieceMovement::set_king_possible_moves(const Board &board, uint32_t row, ui
 
 			uint32_t r = row + i;
 			uint32_t c = column + j;
-			if (!set_possible_if(board, r, c, Piece::Type::None)) {
-				set_possible_if_enemy(board, r, c);
+			if (!possible_moves.set_possible_if(board, r, c, Piece::Type::None)) {
+				possible_moves.set_possible_if_enemy(board, r, c, is_target_piece_white);
 			}
 		}
 	}
 }
 
-
 bool PieceMovement::is_move_possible(uint32_t destination_square) {
-	return possible_moves[destination_square];
+	return possible_moves.is_possible(destination_square);
 }
