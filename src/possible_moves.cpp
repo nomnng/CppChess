@@ -6,8 +6,28 @@ PossibleMoves::PossibleMoves(uint32_t board_width, uint32_t board_height)
 	possible_moves = std::make_unique<bool[]>(width * height);
 }
 
+bool PossibleMoves::set_possible_if_in_bounds(uint32_t row, uint32_t column) {
+	if ((row >= 0 && row < height) && (column >= 0 && column < width)) {
+		possible_moves[row * width + column] = true;
+		return true;
+	}
+	return false;
+}
+
 void PossibleMoves::set_possible(uint32_t row, uint32_t column) {
 	possible_moves[row * width + column] = true;
+}
+
+void PossibleMoves::set_possible(uint32_t square_index) {
+	possible_moves[square_index] = true;
+}
+
+void PossibleMoves::set_impossible(uint32_t row, uint32_t column) {
+	possible_moves[row * width + column] = false;
+}
+
+void PossibleMoves::set_impossible(uint32_t square_index) {
+	possible_moves[square_index] = false;
 }
 
 bool PossibleMoves::set_possible_if(const Board& board, uint32_t row, uint32_t column, Piece::Type piece) {
@@ -36,3 +56,16 @@ bool PossibleMoves::set_possible_if_enemy(const Board& board, uint32_t row, uint
 	return false;	
 }
 
+void PossibleMoves::combine(const PossibleMoves& possible_moves_obj) {
+	uint32_t board_size = width * height;
+	for (uint32_t i = 0; i < board_size; i++) {
+		possible_moves[i] = possible_moves[i] | possible_moves_obj.possible_moves[i];
+	}
+}
+
+void PossibleMoves::subtract(const PossibleMoves& possible_moves_obj) {
+	uint32_t board_size = width * height;
+	for (uint32_t i = 0; i < board_size; i++) {
+		possible_moves[i] = possible_moves[i] & ~possible_moves_obj.possible_moves[i];
+	}
+}

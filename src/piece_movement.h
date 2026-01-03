@@ -9,17 +9,19 @@ public:
 	bool is_move_possible(uint32_t destination_square);
 
 private:
-	PossibleMoves possible_moves;
-	const Piece::Type target_piece;
-	const bool is_target_piece_white;
+	std::unique_ptr<PossibleMoves> target_possible_moves;
+	const Board& board;
+	Piece::Type target_piece;
 
-	void calculate_possible_moves(const Board& board, uint32_t target_square);
+	std::unique_ptr<PossibleMoves> calculate_possible_moves(uint32_t target_square);
 
-	void set_pawn_possible_moves(const Board &board, uint32_t row, uint32_t column);
-	void set_knight_possible_moves(const Board &board, uint32_t row, uint32_t column);
-	void set_rook_possible_moves(const Board &board, uint32_t row, uint32_t column);
-	void set_bishop_possible_moves(const Board &board, uint32_t row, uint32_t column);
-	void set_queen_possible_moves(const Board &board, uint32_t row, uint32_t column);
-	void set_king_possible_moves(const Board &board, uint32_t row, uint32_t column);
+	std::unique_ptr<PossibleMoves> get_pawn_moves(uint32_t row, uint32_t column);
+	std::unique_ptr<PossibleMoves> get_pawn_attacked_squares(uint32_t row, uint32_t column);
+	std::unique_ptr<PossibleMoves> get_knight_moves(uint32_t row, uint32_t column);
+	std::unique_ptr<PossibleMoves> get_rook_moves(uint32_t row, uint32_t column);
+	std::unique_ptr<PossibleMoves> get_bishop_moves(uint32_t row, uint32_t column);
+	std::unique_ptr<PossibleMoves> get_queen_moves(uint32_t row, uint32_t column);
+	std::unique_ptr<PossibleMoves> get_king_base_moves(uint32_t row, uint32_t column);
+	std::unique_ptr<PossibleMoves> get_king_moves(uint32_t row, uint32_t column);
 };
 

@@ -98,12 +98,11 @@ void Game::process_user_move(std::string &move) {
 	PieceMovement piece_movement(board, first_square_index);
 	if (!piece_movement.is_move_possible(second_square_index)) {
 		std::cout << "Impossible move" << std::endl;
+	} else {
+		board.make_move(first_square_index, second_square_index);
 	}
 
-	board.make_move(first_square_index, second_square_index);
 	print_board();
-
-
 };
 
 void Game::print_board() {
