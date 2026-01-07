@@ -49,7 +49,12 @@ std::unique_ptr<PossibleMoves> PieceMovement::get_pawn_moves(uint32_t row, uint3
 	int offsets[] = {1, -1};
 	for (int offset : offsets) {
 		uint32_t capture_column = column + offset;
-		possible_moves->set_possible_if_not(board, capture_row, capture_column, Piece::Type::None);
+		if (!possible_moves->set_possible_if_not(board, capture_row, capture_column, Piece::Type::None)) {
+			uint32_t square_index = board.get_square_index(row, capture_column);
+			if (square_index == board.state.get_en_passant_square_index()) {
+				possible_moves->set_possible(capture_row, capture_column);
+			}
+		}
 	}
 	return possible_moves;
 }

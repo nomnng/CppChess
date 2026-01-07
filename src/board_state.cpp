@@ -1,10 +1,24 @@
 #include "board_state.h"
 
 BoardState::BoardState(uint32_t board_width) {
-	// possible_en_passants_size = board_width;
-	// possible_en_passants = std::make_unique<bool[]>(board_width);
+}
 
-	// moved_white_pawns = std::make_unique<bool[]>(board_width);
+void BoardState::change_turn() {
+	white_turn_flag = !white_turn_flag;
+	en_passant_square_index = new_en_passant_square_index;
+	new_en_passant_square_index = -1;
+}
+
+void BoardState::disable_white_castling() {
+	white_castling_possible = false;
+};
+
+void BoardState::disable_black_castling() {
+	black_castling_possible = false;
+};
+
+void BoardState::set_en_passant_square_index(int32_t index) {
+	new_en_passant_square_index = index;
 }
 
 bool BoardState::is_castling_possible() {

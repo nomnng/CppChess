@@ -81,6 +81,27 @@ void Board::setup_default_board() {
 void Board::make_move(uint32_t target_square_index, uint32_t destination_square_index) {
 	Piece::Type piece = board[target_square_index];
 
+	if (Piece::is_pawn(piece)) {
+		uint32_t previous_en_passant_square_index = state.get_en_passant_square_index();
+		int square_index_diff = previous_en_passant_square_index - target_square_index;
+		if (square_index_diff == 1 || square_index_diff == -1) {
+			board[previous_en_passant_square_index] = Piece::Type::None;
+		}
+
+		uint32_t target_row = get_row_by_square_index(target_square_index);
+		uint32_t destination_row = get_row_by_square_index(destination_square_index);
+		int diff = target_row - destination_row;
+		if (diff == 2 || diff == -2) {
+			internal_state.set_en_passant_square_index(destination_square_index);
+		}
+	} else if (Piece::is_rook(piece)) {
+		if (Piece::is_white(piece)) {
+			internal_state.disable_white_castling();
+		} else {
+			internal_state.disable_black_castling();
+		}
+	}
+
 	board[destination_square_index] = piece;
 	board[target_square_index] = Piece::Type::None;
 	internal_state.change_turn();
