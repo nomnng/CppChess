@@ -35,9 +35,10 @@ Game::Game() {
 }
 
 void Game::run() {
+	is_game_running = true;
 	std::cout << "Starting the game!" << std::endl;
 	print_board();
-	while (1) {
+	while (is_game_running) {
 		std::string user_input;
 		std::cout << "Your move: "; 
 		std::getline(std::cin, user_input);
@@ -99,10 +100,17 @@ void Game::process_user_move(std::string &move) {
 	if (!piece_movement.is_move_possible(second_square_index)) {
 		std::cout << "Impossible move" << std::endl;
 	} else {
+		bool is_king_captured = Piece::is_king(board.get_square(second_square_index));
+		if (is_king_captured) {
+			is_game_running = false;
+		}
 		board.make_move(first_square_index, second_square_index);
 	}
 
 	print_board();
+	if (!is_game_running) {
+		std::cout << (board.state.is_white_turn() ? "White won!" : "Black won!") << std::endl;
+	}
 };
 
 void Game::print_board() {
@@ -133,5 +141,4 @@ void Game::print_board() {
 		std::cout << std::endl;
 	}
 	std::cout << COORDINATE_COLOR_CODE << "  a b c d e f g h" << RESET_COLOR_CODE << std::endl;
-
 }
