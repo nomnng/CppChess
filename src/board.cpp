@@ -95,11 +95,24 @@ void Board::make_move(uint32_t target_square_index, uint32_t destination_square_
 			internal_state.set_en_passant_square_index(destination_square_index);
 		}
 	} else if (Piece::is_rook(piece)) {
-		if (Piece::is_white(piece)) {
-			internal_state.disable_white_castling();
-		} else {
-			internal_state.disable_black_castling();
+		internal_state.disable_castling();
+	} else if (Piece::is_king(piece)) {
+		uint32_t target_column = get_column_by_square_index(target_square_index);
+		uint32_t destination_column = get_column_by_square_index(destination_square_index);
+		int diff = target_column - destination_column;
+		if ((diff == -2 || diff == 2)) {
+			uint32_t rook_row = get_row_by_square_index(target_square_index);
+			uint32_t rook_column = diff > 0 ? 0 : (width - 1);
+			uint32_t rook_square_index = get_square_index(rook_row, rook_column);
+
+			int rook_direction = diff > 0 ? 1 : -1;
+			uint32_t new_rook_square_index = get_square_index(rook_row, destination_column + rook_direction);
+
+			board[new_rook_square_index] = board[rook_square_index];
+			board[rook_square_index] = Piece::Type::None;
+
 		}
+		internal_state.disable_castling();
 	}
 
 	board[destination_square_index] = piece;

@@ -17,11 +17,19 @@ void BoardState::disable_black_castling() {
 	black_castling_possible = false;
 };
 
+void BoardState::disable_castling() {
+	if (white_turn_flag) {
+		white_castling_possible = false;
+	} else {
+		black_castling_possible = false;
+	}
+};
+
 void BoardState::set_en_passant_square_index(int32_t index) {
 	new_en_passant_square_index = index;
 }
 
-bool BoardState::is_castling_possible() {
+bool BoardState::is_castling_possible() const {
 	if (white_turn_flag) {
 		return white_castling_possible;
 	} else {

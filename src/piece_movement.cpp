@@ -1,5 +1,4 @@
 #include "piece_movement.h"
-#include <iostream>
 
 PieceMovement::PieceMovement(const Board& board, uint32_t target_square)
 	: board(board), target_piece(board.get_square(target_square))
@@ -169,6 +168,27 @@ std::unique_ptr<PossibleMoves> PieceMovement::get_king_moves(uint32_t row, uint3
 
 	bool is_king_white = Piece::is_white(board.get_square(row, column));
 
+	bool is_right_castling_possible = board.state.is_castling_possible();
+	bool is_left_castling_possible = board.state.is_castling_possible();
+
+	if (is_right_castling_possible) {
+		for (int i = 1; i <= 2; i++) {
+			if (board.get_square(row, column + i) != Piece::Type::None) {
+				is_right_castling_possible = false;
+				break;
+			}
+		}
+	}
+
+	if (is_left_castling_possible) {
+		for (int i = 1; i <= 2; i++) {
+			if (board.get_square(row, column - i) != Piece::Type::None) {
+				is_left_castling_possible = false;
+				break;
+			}
+		}
+	}
+
 	for (uint32_t square_index = 0; square_index < board.get_square_count(); square_index++) {
 		Piece::Type piece = board.get_square(square_index);
 		if (piece == Piece::Type::None) {
@@ -176,21 +196,49 @@ std::unique_ptr<PossibleMoves> PieceMovement::get_king_moves(uint32_t row, uint3
 		}
 
 		if (Piece::is_white(piece) != is_king_white) {
+			std::unique_ptr<PossibleMoves> enemy_moves;
 			if (Piece::is_king(piece)) {
 				uint32_t r = board.get_row_by_square_index(square_index);
 				uint32_t c = board.get_column_by_square_index(square_index);
-				std::unique_ptr<PossibleMoves> king_moves = get_king_base_moves(r, c);
-				possible_moves->subtract(*king_moves);
+				enemy_moves = get_king_base_moves(r, c);
 			} else if (Piece::is_pawn(piece)) {
 				uint32_t r = board.get_row_by_square_index(square_index);
 				uint32_t c = board.get_column_by_square_index(square_index);
-				std::unique_ptr<PossibleMoves> pawn_moves = get_pawn_attacked_squares(r, c);
-				possible_moves->subtract(*pawn_moves);
+				enemy_moves = get_pawn_attacked_squares(r, c);
 			} else {
-				std::unique_ptr<PossibleMoves> piece_attacked_squares = calculate_possible_moves(square_index);
-				possible_moves->subtract(*piece_attacked_squares);
+				enemy_moves = calculate_possible_moves(square_index);
 			}
+
+			if (is_right_castling_possible) {
+				for (int i = 1; i <= 2; i++) {
+					uint32_t square_index = board.get_square_index(row, column + i);
+					if (enemy_moves->is_possible(square_index)) {
+						is_right_castling_possible = false;
+						break;
+					}
+				}
+			}
+
+			if (is_left_castling_possible) {
+				for (int i = 1; i <= 2; i++) {
+					uint32_t square_index = board.get_square_index(row, column - i);
+					if (enemy_moves->is_possible(square_index)) {
+						is_left_castling_possible = false;
+						break;
+					}
+				}
+			}
+
+			possible_moves->subtract(*enemy_moves);
 		}
+	}
+
+	if (is_right_castling_possible) {
+		possible_moves->set_possible(row, column + 2);
+	}
+
+	if (is_left_castling_possible) {
+		possible_moves->set_possible(row, column - 2);
 	}
 
 	return possible_moves;

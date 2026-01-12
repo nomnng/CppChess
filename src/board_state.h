@@ -9,9 +9,10 @@ public:
 	bool is_white_turn() const { return white_turn_flag; };
 	bool is_black_turn() const { return !white_turn_flag; };
 	int32_t get_en_passant_square_index() const { return en_passant_square_index; };
-	bool is_castling_possible();
+	bool is_castling_possible() const;
 	void disable_white_castling();
 	void disable_black_castling();
+	void disable_castling();
 	void change_turn();
 	void set_en_passant_square_index(int32_t index);
 
